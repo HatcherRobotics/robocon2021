@@ -1,0 +1,4 @@
+<launch>
+    <!-- 启动节点 -->
+    <node name="arc_draw_node" pkg="arc_draw" type="arc_draw_node" output="screen" />
+</launch>
