@@ -47,30 +47,46 @@ void LaserScan::ScanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
     for(int i=0;i<1081;i++)
     {
         new_scan[i]=scan_msg->ranges[i];
+     //   std::cout<< new_scan[i]<<std::endl;
     }
 
- 
     int i=1;
     int count=0;
-    while(i<1081)
+    float result[6];//最多有6个筒
+    int bucket_number=0;//数到筒的个数
+    while(i<1081)// i代表线的序号，总共有1081条线
     {
+         
         if(    (   (new_scan[i-1]) - (new_scan[i]) >1 )   &&   (  (new_scan[i])-(new_scan[i+1])<0.02  )   )
-            //判断筒的最右端
+            //判断筒的最右端  右线比左线多1米并且左线比其左边的线的长度小于2厘米
+            //i-1打在外面i打在筒上
              {    
-                i++;
-                count=i;
+                i++;//i-1变成圆筒最右端线的序号
+                count=i;//count代表右端第二条线
                 while(   (  (new_scan[i-1]) - (new_scan[i])   <      0.02   )    &&  (  (new_scan[i]) - (new_scan[i-1])   <   0.02  )   )
+                //确保选取的点都打在筒上，在筒的最左端交界处不满足此公式跳出循环
                     {
                              //arc_draw.ranges[i-1]=new_scan[i-1];
-                            new_scan_filter[i-1]=new_scan[i-1];
+                            new_scan_filter[i-1]=new_scan[i-1];//找出潜在的打在圆筒上的点
                              i++;
                     } 
+                    //这时i为打到外面的第一条线
                if(   (   new_scan_filter[i-1]-   new_scan_filter[count-1]    <0.03 )    ||    (   new_scan_filter[count-1]    -  new_scan_filter[i-1]     <0.03    )      )
+              //如果最左端一条线i-1和最右端一条线count-1长度非常接近
                {
                    for(int k=count;k<i;k++)
                    {
                        arc_draw.ranges[k-1]=new_scan_filter[i-1];
                    }
+                  if  ( (i-count)>3  )
+                        {
+                             result[bucket_number]= scan_msg->ranges[i-count];
+                            bucket_number++;
+                            std::cout<<"The distance of number   "<<bucket_number<<"   is   "<<result[bucket_number]<<std::endl;
+                        }
+
+                       
+                          
                }        
             }
         i++;
