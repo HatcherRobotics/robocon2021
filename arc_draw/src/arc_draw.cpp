@@ -49,53 +49,52 @@ void LaserScan::ScanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
     {
          new_scan_filter[j] = 0;
     }
-     for (int j = 0; j < 1081;j++)
+    for (int j = 0; j < 1081;j++)
     {
-        if (!std::isfinite(scan_msg->ranges[j]))
+    if (!std::isfinite(scan_msg->ranges[j]))
         {
             continue;
         }
-    }
+     }
     for(int j=0;j<1081;j++)
     {
         new_scan[j]=scan_msg->ranges[j];
-     //   std::cout<< new_scan[i]<<std::endl;
     }
 
     int i=440;
-    int start_point=0;
-    int end_point=0;
-    /*float result[10];//最多有10个筒
-    int bucket_number=0;//数到筒的个数*/
+    int start_point;
+    int end_point;
+    start_point=0;
+    end_point=0;
     float detect_distance[6];
-     int detect_number=0;
+     int detect_number;
+     detect_number=0;
+     int detect_angle[6];
+     
     while(i<640)// i代表线的序号，总共有1081条线(0--1080)
-    {
+     {
         if(    (   new_scan[i-1]) - (new_scan[i]) >1       )
         {    
-                
+                detect_number++;
                  i++;
                 start_point=i-1;
                 do
                  {
                 new_scan_filter[i-1]=new_scan[i-1];
-                i++;
+                 i++;
                  }while (     ! ((new_scan[i]-new_scan[i-1] )  >  1 )     );
-                end_point=i-1;
-                for(int k=start_point;k<end_point;k++)
-                {
-                    arc_draw.ranges[k]=new_scan_filter[k];       
-                }
+                 end_point=i-1;
+                 for(int k=start_point;k<end_point;k++)
+                 {
+                     arc_draw.ranges[k]=new_scan_filter[k];       
+                 }
                 detect_distance[detect_number]=new_scan_filter[(start_point+end_point)/2];
-                if(end_point-start_point>5)
-                {
-                        std::cout<< "detect_angle   "<<(start_point+end_point)/2*0.25-135<<"degrees   "<<detect_distance[detect_number]<<std::endl;    
-                }        
-         }
+                detect_angle[detect_number]=(start_point+end_point)/2*0.25-135;
+                std::cout<<"object ["<<detect_number<<"] "<<" : "<<"angle :  "<<detect_angle[detect_number]<<" degrees "<<" distance :  "<<detect_distance[detect_number] <<" meters "<<std::endl;
+        } 
          i++;
-        detect_number++;
      }
-     arc_draw_publisher_.publish(arc_draw);
+    arc_draw_publisher_.publish(arc_draw);
 }
 
 
