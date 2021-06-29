@@ -1,7 +1,7 @@
 #include<ros/ros.h>
 #include<sensor_msgs/LaserScan.h>
 #include<map>
-
+#include<math.h>
 class LaserScan
 {
 private:
@@ -44,55 +44,61 @@ void LaserScan::ScanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
     arc_draw.ranges.resize(1081);
     float new_scan[1081]; 
     float new_scan_filter[1081];
-    for(int i=0;i<1081;i++)
+   
+    for (int j = 0; j < 1081;j++)
     {
-        new_scan[i]=scan_msg->ranges[i];
+         new_scan_filter[j] = 0;
+    }
+     for (int j = 0; j < 1081;j++)
+    {
+        if (!std::isfinite(scan_msg->ranges[j]))
+        {
+            continue;
+        }
+    }
+    for(int j=0;j<1081;j++)
+    {
+        new_scan[j]=scan_msg->ranges[j];
      //   std::cout<< new_scan[i]<<std::endl;
     }
 
-    int i=1;
-    int count=0;
-    float result[6];//最多有6个筒
-    int bucket_number=0;//数到筒的个数
-    while(i<1081)// i代表线的序号，总共有1081条线
+    int i=440;
+    int start_point=0;
+    int end_point=0;
+    /*float result[10];//最多有10个筒
+    int bucket_number=0;//数到筒的个数*/
+    float detect_distance[6];
+     int detect_number=0;
+    while(i<640)// i代表线的序号，总共有1081条线(0--1080)
     {
-         
-        if(    (   (new_scan[i-1]) - (new_scan[i]) >1 )   &&   (  (new_scan[i])-(new_scan[i+1])<0.02  )   )
-            //判断筒的最右端  右线比左线多1米并且左线比其左边的线的长度小于2厘米
-            //i-1打在外面i打在筒上
-             {    
-                i++;//i-1变成圆筒最右端线的序号
-                count=i;//count代表右端第二条线
-                while(   (  (new_scan[i-1]) - (new_scan[i])   <      0.02   )    &&  (  (new_scan[i]) - (new_scan[i-1])   <   0.02  )   )
-                //确保选取的点都打在筒上，在筒的最左端交界处不满足此公式跳出循环
-                    {
-                             //arc_draw.ranges[i-1]=new_scan[i-1];
-                            new_scan_filter[i-1]=new_scan[i-1];//找出潜在的打在圆筒上的点
-                             i++;
-                    } 
-                    //这时i为打到外面的第一条线
-               if(   (   new_scan_filter[i-1]-   new_scan_filter[count-1]    <0.03 )    ||    (   new_scan_filter[count-1]    -  new_scan_filter[i-1]     <0.03    )      )
-              //如果最左端一条线i-1和最右端一条线count-1长度非常接近
-               {
-                   for(int k=count;k<i;k++)
-                   {
-                       arc_draw.ranges[k-1]=new_scan_filter[i-1];
-                   }
-                  if  ( (i-count)>3  )
-                        {
-                             result[bucket_number]= scan_msg->ranges[i-count];
-                            bucket_number++;
-                            std::cout<<"The distance of number   "<<bucket_number<<"   is   "<<result[bucket_number]<<std::endl;
-                        }
-
-                       
-                          
-               }        
-            }
-        i++;
-    }
+        if(    (   new_scan[i-1]) - (new_scan[i]) >1       )
+        {    
+                
+                 i++;
+                start_point=i-1;
+                do
+                 {
+                new_scan_filter[i-1]=new_scan[i-1];
+                i++;
+                 }while (     ! ((new_scan[i]-new_scan[i-1] )  >  1 )     );
+                end_point=i-1;
+                for(int k=start_point;k<end_point;k++)
+                {
+                    arc_draw.ranges[k]=new_scan_filter[k];       
+                }
+                detect_distance[detect_number]=new_scan_filter[(start_point+end_point)/2];
+                if(end_point-start_point>5)
+                {
+                        std::cout<< "detect_angle   "<<(start_point+end_point)/2*0.25-135<<"degrees   "<<detect_distance[detect_number]<<std::endl;    
+                }        
+         }
+         i++;
+        detect_number++;
+     }
      arc_draw_publisher_.publish(arc_draw);
 }
+
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "arc_draw_node"); // 节点的名字
