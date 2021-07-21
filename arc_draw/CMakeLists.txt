@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
 )
-
+##find_package(LibSerial REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -112,12 +112,13 @@ catkin_package(CATKIN_DEPENDS roscpp sensor_msgs std_msgs)
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/arc_draw.cpp
-# )
+#src/${PROJECT_NAME}/arc_draw.cpp
+#)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -197,4 +198,6 @@ include_directories(
 # catkin_add_nosetests(test)
 add_executable(arc_draw_node src/arc_draw.cpp)
 add_dependencies(arc_draw_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(arc_draw_node ${catkin_LIBRARIES})
+target_link_libraries(arc_draw_node ${catkin_LIBRARIES} serial)
+
+
