@@ -1,0 +1,10 @@
+[Unit]
+Description=Lidar startup script
+
+[Service]
+ExeStart=/bin/bash -c '\
+  source /home/hatcher/.bashrc; \
+  /home/hatcher/boot.sh'
+
+[Install]
+WantedBy=multi-user.target
