@@ -102,7 +102,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(CATKIN_DEPENDS roscpp sensor_msgs std_msgs)
+catkin_package(CATKIN_DEPENDS roscpp sensor_msgs std_msgs 
+INCLUDE_DIRS include
+DEPENDS serial
+)
 ###########
 ## Build ##
 ###########
@@ -110,16 +113,18 @@ catkin_package(CATKIN_DEPENDS roscpp sensor_msgs std_msgs)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
-
 )
-
+include_directories(include/arc_draw)
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#src/${PROJECT_NAME}/arc_draw.cpp
-#)
-
+add_library(${PROJECT_NAME}
+include/arc_draw/arc_draw.h
+include/arc_draw/send_value.h
+src/arc_draw.cpp
+src/laserscan.cpp
+src/main.cpp
+)
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -196,7 +201,7 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(arc_draw_node src/arc_draw.cpp)
+add_executable(arc_draw_node src/arc_draw.cpp src/laserscan.cpp  src/main.cpp)
 add_dependencies(arc_draw_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(arc_draw_node ${catkin_LIBRARIES} serial)
 
